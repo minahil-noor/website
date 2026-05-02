@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartMob Hub - Premium Mobile Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif }
+        body { background:#f4f6fb; color:#333 }
+        header { background:#fff; padding:15px 50px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 10px rgba(0,0,0,.1); position:sticky; top:0; z-index:100 }
+        header h2 { color:#6c63ff; }
+        nav a { margin:0 15px; text-decoration:none; color:#333; font-weight:500; transition:.3s }
+        nav a:hover { color:#6c63ff }
+        .hero { height:70vh; background:url('https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1470&q=80') center/cover no-repeat; color:#fff; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; position:relative }
+        .hero::after { content:""; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.5) }
+        .hero h1 { font-size:3rem; z-index:1; margin-bottom:15px }
+        .hero p { font-size:1.2rem; z-index:1; margin-bottom:20px }
+        .hero button { z-index:1; padding:12px 30px; border:none; border-radius:25px; background:#6c63ff; color:#fff; font-size:1rem; cursor:pointer; transition:.3s }
+        .hero button:hover { background:#2b2d42 }
+        .section { padding:60px 50px }
+        .section h2 { text-align:center; margin-bottom:40px; color:#6c63ff }
+        .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:25px }
+        .card { background:#fff; padding:15px; border-radius:12px; box-shadow:0 5px 20px rgba(0,0,0,.08); transition:.3s; text-align:center; overflow:hidden; cursor: pointer; }
+        .card:hover { transform: translateY(-5px); }
+        .card img { width:100%; border-radius:12px; margin-bottom:10px; height: 180px; object-fit: cover; }
+        .card h3 { margin-bottom:10px }
+        .card p { margin-bottom:10px; font-weight:600 }
+        .card button { padding:10px; border:none; border-radius:20px; background:#6c63ff; color:#fff; width:100%; margin-top:5px; cursor:pointer; transition:.3s }
+        .card button:hover { background:#2b2d42 }
+        .drawer { position:fixed; right:-400px; top:0; width:400px; height:100%; background:#fff; padding:20px; transition:.3s; overflow:auto; z-index:200; box-shadow:-5px 0 15px rgba(0,0,0,.1) }
+        .drawer.open { right:0 }
+        .drawer h3 span { font-size:1.5rem; color:#6c63ff; font-weight:bold; float:right; cursor:pointer; transition:.3s }
+        .checkout { background:#2ecc71; color:#fff; border:none; padding:12px; border-radius:15px; margin-top:10px; cursor:pointer; width:100%; font-weight:bold }
+        .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.5); display:none; justify-content:center; align-items:center; z-index:300 }
+        .modal-content { background:#fff; padding:20px; border-radius:10px; width:300px; text-align:center }
+        footer { background:#2b2d42; color:#fff; text-align:center; padding:20px; margin-top:50px }
+        footer a { color:#fff; margin:0 10px; text-decoration:none; font-weight:500 }
+        .repair-card { background:#6c63ff; color:#fff; text-align:center; padding:40px; border-radius:15px; transition:.3s; }
+        input, select, textarea { width:100%; padding:10px; margin:5px 0; border-radius:8px; border:1px solid #ccc; }
+    </style>
+</head>
+
+<body>
+<header>
+    <h2>SmartMob Hub</h2>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#brands">Brands</a>
+        <a href="#repair">Repair</a>
+        <a href="#contact">Contact</a>
+        <a href="admin.html" target="_blank">Admin</a>
+        <a href="#" onclick="toggleCart()">Cart</a>
+    </nav>
+</header>
+
+<section class="hero">
+    <h1>Premium Mobile Store</h1>
+    <p>Compare • Buy • Repair</p>
+    <button onclick="document.getElementById('brands').scrollIntoView({behavior:'smooth'})">Shop Now</button>
+</section>
+
+<section class="section" id="brands">
+    <h2>Our Brands & Accessories</h2>
+    <div class="grid">
+        <div class="card" onclick="showBrand('samsung')"><img src="https://static0.howtogeekimages.com/wordpress/wp-content/uploads/2022/07/Samsung-logo-sign.jpg"><h3>Samsung</h3><button>View Repair Services</button></div>
+        <div class="card" onclick="showBrand('vivo')"><img src="https://asia-exstatic-vivofs.vivo.com/PSee2l50xoirPK7y/1650521676804/d87e031e0c7060414e49775983cf81ce.jpg"><h3>Vivo</h3><button>View Repair Services</button></div>
+        <div class="card" onclick="showBrand('oppo')"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQF-9oCfbXfoNopq5Ae7G_YidX2eUzaj3KmzA&s"><h3>Oppo</h3><button>View Repair Services</button></div>
+        <div class="card" onclick="showBrand('infinix')"><img src="https://www.whatmobile.com.pk/control/news/assets/29062022/f75cbe282eacce2a1dce0fcf3fca6ba4.jpg"><h3>Infinix</h3><button>View Repair Services</button></div>
+        <div class="card" onclick="showBrand('accessories')"><img src="https://elements-resized.envatousercontent.com/elements-cover-images/d734dc0a-2b6c-4fec-a7f3-1237cdce4e7b?w=316&cf_fit=scale-down&q=94&format=jpeg&s=4cbbe3d5eae7f7fd78c4018ecd9d1f76eb788d9cd32b0e09b93c826ef6540b58"><h3>Accessories</h3><button>View Accessories</button></div>
+    </div>
+</section>
+
+<section class="section" id="productsSection" style="display:none;">
+    <h2 id="brandTitle">Products & Services</h2>
+    <div class="grid" id="products"></div>
+</section>
+
+<section class="section" id="repair">
+    <h2>Mobile Repair Service</h2>
+    <form id="repairForm" onsubmit="submitRepair(event)">
+        <div class="repair-card">
+            <h3>Tell us your problem</h3>
+            <textarea id="problem" placeholder="Describe your issue" required></textarea>
+            <input id="rname" placeholder="Name" required>
+            <input id="rphone" placeholder="Phone" required>
+            <input id="remail" placeholder="Email" required>
+            <button type="submit" class="checkout">Submit Repair Request</button>
+        </div>
+    </form>
+</section>
+
+<section class="section" id="contact">
+    <h2>Contact Us</h2>
+    <div style="text-align: center; font-size: 1.1rem;">
+        <p>Email: <a href="mailto:minahil27mano@gmail.com">minahil27mano@gmail.com</a></p>
+        <p>WhatsApp: <a href="https://wa.me/923024209592" target="_blank">0302-4209592</a></p>
+        <p><a href="https://instagram.com/onlinemobhub/" target="_blank">Instagram</a> | <a href="https://www.facebook.com/onlinemobhub/" target="_blank">Facebook</a></p>
+    </div>
+</section>
+
+<footer>
+    © SmartMob Hub | Follow us: 
+    <a href="https://wa.me/923024209592" target="_blank">WhatsApp</a>
+    <a href="https://instagram.com/onlinemobhub/" target="_blank">Instagram</a>
+    <a href="https://www.facebook.com/onlinemobhub/" target="_blank">Facebook</a>
+</footer>
+
+<div class="drawer" id="cartDrawer">
+    <h3>Cart <span onclick="toggleCart()">✕</span></h3>
+    <div id="cartItems"></div>
+    <p id="total" style="font-weight:bold; margin:15px 0;">Total: PKR 0</p>
+    <select id="method"><option>Cash on Delivery</option><option>EasyPaisa</option><option>JazzCash</option></select>
+    <input id="name" placeholder="Name">
+    <input id="phone" placeholder="Phone">
+    <input id="address" placeholder="Address">
+    <button class="checkout" onclick="placeOrder()">Place Order</button>
+</div>
+
+<script>
+let cart = [];
+
+const data = {
+    samsung: [
+        {name:'Screen Replacement', price:5000, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_tqKZ6KXa_N0D-cFCY6gIg0IehHeGgChprA&s'},
+        {name:'Battery Replacement', price:3000, img:'https://guide-images.cdn.ifixit.com/igi/EioxaiRAabFWAit5.medium'},
+        {name:'Software Repair', price:1500, img:'https://543549e8.delivery.rocketcdn.me/wp-content/uploads/2023/03/Software-issue-1024x682.jpg'}
+    ],
+    vivo: [
+        {name:'Screen Replacement', price:4000, img:'https://laz-img-sg.alicdn.com/p/9b9535ffc7c65cd8c26b6239924c28c6.jpg'},
+        {name:'Battery Replacement', price:2500, img:'https://img.diylooks.com/upload/store/product_l/EDA006934545.jpg'},
+        {name:'Software Repair', price:1200, img:'https://in-exstatic-vivofs.vivo.com/gdHFRinHEMrj3yPG/20181022/ac21012b5c96b43f53530d67739d5f93.png'}
+    ],
+    oppo: [
+        {name:'Screen Replacement', price:4500, img:'https://image-cdn.ubuy.com/a-mind-for-oppo-reno4-z-5g-cph2065/400_400_100/693c3d0b66ce3176610900bd.jpg'},
+        {name:'Battery Replacement', price:2800, img:'https://guide-images.cdn.ifixit.com/igi/fJosOBMZyqiZDtEc.medium'},
+        {name:'Software Repair', price:2000, img:'https://www.oppo.com/content/dam/oppo/event-page-asset/rom/image/en/bgimg.png'}
+    ],
+    infinix: [
+        {name:'Screen Replacement', price:3500, img:'https://images.olx.com.pk/thumbnails/582424462-400x300.jpeg'},
+        {name:'Battery Replacement', price:2500, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ10bzHqumkRTZ8y5G8YMpH0p_eVTQ5mfV5ZQ&s'},
+        {name:'Software Repair', price:1500, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSFkSGSk3EyuQYhfY5xge77ru0Wjej-fG_Q4A&s'}
+    ],
+    accessories: [
+        {name:'Ear Buds Pro 4', price:3000, img:'https://m.media-amazon.com/images/S/aplus-media-library-service-media/b7e58bb5-762b-47dc-b5b9-49493b7475f9.__CR0,0,1464,600_PT0_SX1464_V1___.jpg'},
+        {name:'Buds Pro-4 Black 3', price:4500, img:'https://images.samsung.com/is/image/samsung/p6pim/pk/s2602/gallery/pk-galaxy-buds4-r640-sm-r640nzkamea-550999216?$Q90_1248_936_F_PNG$'},
+        {name:'Buds Pro 4 Golden Color', price:4000, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS361uB67FAOMTBNnDMW3KrMp12TovPfA_mzA&s'},
+        {name:'Buds Pro 4 Silver White', price:4000, img:'https://preview.redd.it/samsung-galaxy-buds-4-pro-white-initial-impressions-vs-buds-v0-d7pz85az19og1.jpeg?auto=webp&s=2853495093cf4ca777a3d4c7da0b09f36ad558d2'},
+        {name:'Vivo Original Charger', price:1200, img:'https://drawingtabs.pk/cdn/shop/files/1cb086b4a2466fedbb6b16c1174f2c27_jpg_750x750_jpg.webp?v=1717237863&width=1445'},
+        {name:'LED Charger Auto', price:999, img:'https://interlinkcap.com/cdn/shop/files/WhatsApp_Image_2025-09-15_at_2.16.55_PM.jpg?v=1758346355&width=1946'},
+        {name:'Superfast Charger', price:1800, img:'https://www.dablew.pk/images/product_gallery/dablew-image-3802.jpg'},
+        {name:'Samsung USB-C Edition', price:2200, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRIpJzYAowm2x5KsbHrm7ZDewCdHmLfGi-B2w&s'},
+        {name:'Lithium Battery Power Bank', price:3199, img:'https://cdn.shopify.com/s/files/1/0550/5771/1164/files/first_post_SML-01_1400x1400.jpg'},
+        {name:'Ear Buds Pouch', price:300, img:'https://dablew.pk/wp-content/uploads/2024/09/Buy-Samsung-Galaxy-Buds-3-Pro-Case-in-Pakistan-at-Dab-Lew-Tech-1.jpg'},
+        {name:'Nokia Original Battery', price:900, img:'https://img.drz.lazcdn.com/static/pk/p/5b74341d204df161306d8d957e599654.jpg_720x720q80.jpg'},
+        {name:'Type C Heavy Converter', price:1350, img:'https://m.media-amazon.com/images/I/61F39EkNmmL._AC_UF1000,1000_QL80_.jpg'},
+        {name:'AKG Local Type C Hand Free', price:720, img:'https://static-01.daraz.pk/p/bfcaa0c21b5d0c3c47cfcff00f8239e9.jpg'},
+        {name:'Ear Buds Pro 5', price:3150, img:'https://www.gizmochina.com/wp-content/uploads/2023/11/Screenshot-2023-11-26-015945.png'},
+        {name:'Ear Buds Pro 10', price:4100, img:'https://m.media-amazon.com/images/I/61iyNRaBTPL._AC_UF894,1000_QL80_.jpg'}
+    ]
+};
+// Supabase Setup
+const supabaseUrl = 'https://cxyxbwsosroeipdjyuuc.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4eXhid3Nvc3JvZWlwZGp5dXVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2MDcxMzQsImV4cCI6MjA5MzE4MzEzNH0.8lI73RmCGGU3jQsiJxnyCMOe1NSaLWqvO3_1FBRZImM';
+const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+// Show Brand Function
+function showBrand(brandName) {
+    document.getElementById('productsSection').style.display = 'block';
+    const container = document.getElementById('products');
+    container.innerHTML = ''; 
+
+    const items = data[brandName.toLowerCase()];
+    if (items) {
+        items.forEach(p => {
+            const card = document.createElement('div');
+            card.className = "card";
+            
+            // Feature page link[cite: 1, 2]
+            card.onclick = () => {
+                localStorage.setItem("selectedItem", JSON.stringify(p));
+                window.location.href = "details.html";
+            };
+
+            card.innerHTML = `
+                <img src="${p.img}">
+                <h3>${p.name}</h3>
+                <p>PKR ${p.price}</p>
+                <button onclick="event.stopPropagation(); addToCart('${p.name}', ${p.price}, '${p.img}')">Add to Cart</button>
+            `;
+            container.appendChild(card);
+        });
+    }
+}
+
+// Order Save karne ka function
+async function placeOrder() {
+    const name = document.getElementById('name').value;
+    const phone = document.getElementById('phone').value;
+    const address = document.getElementById('address').value;
+
+    if (!name || !phone || cart.length === 0) {
+        alert("Details fill karein!");
+        return;
+    }
+
+    const { error } = await _supabase.from('orders').insert([{ 
+        customer_name: name, 
+        phone: phone, 
+        address: address, 
+        items: JSON.stringify(cart),
+        total: cart.reduce((a, i) => a + (i.price * i.qty), 0) 
+    }]);
+
+    if (!error) {
+        alert("Order Successful! Aapke Admin Panel mein save ho gaya hai.");
+        cart = [];
+        localStorage.removeItem("cart");
+        location.reload();
+    } else {
+        alert("Order save nahi hua. Table 'orders' check karein.");
+    }
+}
+function submitRepair(event) {
+    event.preventDefault();
+    alert("Repair Request Sent!");
+}
+</script>
+</body>
+</html>

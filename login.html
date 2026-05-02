@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SmartMob Hub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        body {
+            background: #0f0f0f;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Bubble Animation Background */
+        .bubbles { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+        .bubble {
+            position: absolute;
+            bottom: -100px;
+            width: 40px;
+            height: 40px;
+            background: rgba(122, 102, 255, 0.2);
+            border-radius: 50%;
+            animation: rise 10s infinite ease-in;
+        }
+
+        @keyframes rise {
+            0% { bottom: -100px; transform: translateX(0); }
+            50% { transform: translateX(100px); }
+            100% { bottom: 110vh; transform: translateX(-50px); opacity: 0; }
+        }
+
+        /* Floating Mobile Image Background */
+        .bg-mobile {
+            position: absolute;
+            right: -5%;
+            bottom: -10%;
+            width: 500px;
+            opacity: 0.2;
+            filter: grayscale(1);
+            animation: float 6s infinite ease-in-out;
+            z-index: 0;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-30px) rotate(5deg); }
+        }
+
+        .login-card {
+            background: #1a1a1a;
+            padding: 40px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+            z-index: 10;
+            position: relative;
+        }
+
+        h2 { color: #fff; margin-bottom: 10px; font-size: 28px; }
+        p { color: #aaa; margin-bottom: 30px; font-size: 14px; }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            background: #252525;
+            color: #fff;
+            outline: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: #7a66ff;
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn:hover { background: #5a48d1; transform: scale(1.02); }
+
+        .toggle-link {
+            color: #aaa;
+            margin-top: 20px;
+            display: block;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .toggle-link span { color: #7a66ff; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="bubbles" id="bubbleContainer"></div>
+    <img src="https://www.pngmart.com/files/15/Apple-iPhone-12-Transparent-Images-PNG.png" class="bg-mobile">
+
+    <div class="login-card">
+        <h2 id="formTitle">Sign Up</h2>
+        <p id="formSub">Welcome to SmartMob Hub</p>
+
+        <input type="email" id="email" placeholder="Email Address" required>
+        <input type="password" id="password" placeholder="Password" required>
+
+        <button class="btn" id="mainBtn" onclick="handleAuth()">Create Account</button>
+
+        <a class="toggle-link" onclick="toggleForm()">
+            <span id="toggleInstruction">Already have an account?</span> <span id="toggleText">Login</span>
+        </a>
+    </div>
+
+    <script>
+        let isLogin = false;
+
+        // Toggle logic (sirf UI badalne ke liye)
+        function toggleForm() {
+            isLogin = !isLogin;
+            document.getElementById('formTitle').innerText = isLogin ? "Login" : "Sign Up";
+            document.getElementById('mainBtn').innerText = isLogin ? "Login" : "Create Account";
+            document.getElementById('toggleInstruction').innerText = isLogin ? "Don't have an account?" : "Already have an account?";
+            document.getElementById('toggleText').innerText = isLogin ? "Sign Up" : "Login";
+        }
+
+        // Formality Authentication Logic
+        function handleAuth() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Simple check
+            if(!email || !password) { 
+                alert("Please fill all fields"); 
+                return; 
+            }
+
+            if(isLogin) {
+                // Fake Login Success
+                alert("Login Successful! Welcome back.");
+                window.location.href = "index.html"; 
+            } else {
+                // Fake Signup Success
+                alert("Account created successfully! Redirecting...");
+                window.location.href = "index.html"; 
+            }
+        }
+
+        // Background Animation (Pehle wala hi hai)
+        const container = document.getElementById('bubbleContainer');
+        for(let i=0; i<15; i++) {
+            let b = document.createElement('div');
+            b.className = 'bubble';
+            b.style.left = Math.random() * 100 + '%';
+            b.style.animationDelay = Math.random() * 5 + 's';
+            b.style.width = b.style.height = (Math.random() * 50 + 20) + 'px';
+            container.appendChild(b);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Online Mob Hub - Details</title>
+    <style>
+        body { font-family: 'Poppins', sans-serif; padding: 40px; background: #f8f9fa; }
+        .container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .product-grid { display: flex; gap: 30px; }
+        .product-img img { width: 350px; border-radius: 15px; }
+        .review-box { margin-top: 40px; padding-top: 20px; border-top: 2px solid #eee; }
+        .rev-card { background: #f1f1f1; padding: 15px; margin-bottom: 10px; border-radius: 10px; }
+        button { background: #6c63ff; color: #fff; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="product-grid">
+        <div class="product-img" id="pImg"></div>
+        <div class="product-info">
+            <h1 id="pName"></h1>
+            <h2 id="pPrice" style="color: #6c63ff;"></h2>
+            <p>Premium Quality Product with Warranty.</p>
+            <button onclick="addFromDetails()">Add to Cart</button>
+        </div>
+    </div>
+
+    <div class="review-box">
+        <h3>Customer Reviews</h3>
+        <div id="reviewsContainer">Loading reviews...</div>
+        <hr>
+        <h4>Leave a Review</h4>
+        <textarea id="revInput" style="width:100%; height:80px; border-radius:10px; padding:10px;" placeholder="Share your experience..."></textarea>
+        <button onclick="submitReview()" style="margin-top:10px;">Post Review</button>
+    </div>
+</div>
+
+<script>
+const supabaseUrl = 'https://cxyxbwsosroeipdjyuuc.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4eXhid3Nvc3JvZWlwZGp5dXVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2MDcxMzQsImV4cCI6MjA5MzE4MzEzNH0.8lI73RmCGGU3jQsiJxnyCMOe1NSaLWqvO3_1FBRZImM';
+const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+const item = JSON.parse(localStorage.getItem("selectedItem"));
+
+if (item) {
+    document.getElementById('pName').innerText = item.name;
+    document.getElementById('pPrice').innerText = "PKR " + item.price;
+    document.getElementById('pImg').innerHTML = `<img src="${item.img}">`;
+    getReviews();
+}
+
+// Add to cart from this page
+function addFromDetails() {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    cart.push(item);
+    localStorage.setItem("cart", JSON.stringify(cart));
+    alert("Added to cart!");
+}
+
+// Fetch Reviews
+async function getReviews() {
+    const { data } = await _supabase.from('reviews').select('*').eq('product_name', item.name);
+    const div = document.getElementById('reviewsContainer');
+    if (data && data.length > 0) {
+        div.innerHTML = data.map(r => `<div class="rev-card"><b>Anonymous:</b> <p>${r.comment}</p></div>`).join('');
+    } else {
+        div.innerHTML = "Be the first to review!";
+    }
+}
+
+// Submit Review[cite: 2]
+async function submitReview() {
+    const text = document.getElementById('revInput').value;
+    if (!text) return;
+    await _supabase.from('reviews').insert([{ product_name: item.name, comment: text }]);
+    alert("Review Added!");
+    location.reload();
+}
+</script>
+</body>
+</html>
