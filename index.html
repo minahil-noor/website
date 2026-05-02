@@ -39,8 +39,97 @@
         footer a { color:#fff; margin:0 10px; text-decoration:none; font-weight:500 }
         .repair-card { background:#6c63ff; color:#fff; text-align:center; padding:40px; border-radius:15px; transition:.3s; }
         input, select, textarea { width:100%; padding:10px; margin:5px 0; border-radius:8px; border:1px solid #ccc; }
+        /* Chat Widget Styles */
+.chat-widget-btn {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: #007bff; /* Aapka main blue color */
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 5px 20px rgba(0, 123, 255, 0.4);
+    z-index: 1000;
+    font-size: 24px;
+}
+
+.chat-window {
+    position: fixed;
+    bottom: 95px;
+    right: 25px;
+    width: 320px;
+    max-width: 85%;
+    background: #151515;
+    border: 1px solid #333;
+    border-radius: 15px;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1000;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.chat-header {
+    background: #007bff;
+    padding: 15px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    color: white;
+}
+
+.chat-messages {
+    height: 250px;
+    padding: 15px;
+    overflow-y: auto;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: white;
+}
+
+.msg { padding: 8px 12px; border-radius: 10px; max-width: 85%; word-wrap: break-word; }
+.msg-bot { background: #333; align-self: flex-start; }
+.msg-user { background: #007bff; align-self: flex-end; }
+
+.chat-input-area {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #333;
+    background: #080808;
+}
+
+.chat-input-area input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 5px;
+    outline: none;
+}
     </style>
 </head>
+<div class="chat-widget-btn" onclick="toggleIndexChat()">💬</div>
+
+<div class="chat-window" id="indexChatWindow">
+    <div class="chat-header">
+        <span>Mob Hub Support</span>
+        <span style="cursor:pointer" onclick="toggleIndexChat()">×</span>
+    </div>
+    <div class="chat-messages" id="indexChatMsgs">
+        <div class="msg msg-bot">Welcome to Online Mob Hub! How can we help you today?</div>
+    </div>
+    <div class="chat-input-area">
+        <input type="text" id="indexUserInput" placeholder="Type a message...">
+        <button onclick="sendIndexMessage()" style="background:none; border:none; color:#007bff; font-weight:bold; cursor:pointer;">Send</button>
+    </div>
+</div>
 
 <body>
 <header>
@@ -119,7 +208,10 @@
 </div>
 
 <script>
-let cart = [];
+let cart =[];
+window.onload = () => {
+    updateCartUI();
+};
 
 const data = {
     samsung: [
@@ -165,7 +257,6 @@ const supabaseUrl = 'https://cxyxbwsosroeipdjyuuc.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4eXhid3Nvc3JvZWlwZGp5dXVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2MDcxMzQsImV4cCI6MjA5MzE4MzEzNH0.8lI73RmCGGU3jQsiJxnyCMOe1NSaLWqvO3_1FBRZImM';
 const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-// Show Brand Function
 function showBrand(brandName) {
     document.getElementById('productsSection').style.display = 'block';
     const container = document.getElementById('products');
@@ -176,8 +267,6 @@ function showBrand(brandName) {
         items.forEach(p => {
             const card = document.createElement('div');
             card.className = "card";
-            
-            // Feature page link[cite: 1, 2]
             card.onclick = () => {
                 localStorage.setItem("selectedItem", JSON.stringify(p));
                 window.location.href = "details.html";
@@ -192,13 +281,66 @@ function showBrand(brandName) {
             container.appendChild(card);
         });
     }
+    // Smooth scroll to products
+    document.getElementById('productsSection').scrollIntoView({behavior:'smooth'});
 }
 
-// Order Save karne ka function
+// Add to Cart and Open Drawer
+function addToCart(name, price, img) {
+    // 1. Item ko list mein add karna
+    const existing = cart.find(i => i.name === name);
+    if(existing) {
+        existing.qty++;
+    } else {
+        cart.push({name, price, img, qty: 1});
+    }
+    
+    // 2. Data save karna
+    localStorage.setItem("cart", JSON.stringify(cart));
+    updateCartUI();
+    
+    // 3. CART DRAWER KO SHOW KARNA (Ye line zaroori hai)
+    const drawer = document.getElementById('cartDrawer');
+    if (drawer) {
+        drawer.classList.add('open'); // Ye cart ko slide karke samne layega
+    }
+}
+
+
+function updateCartUI() {
+    const container = document.getElementById('cartItems');
+    const totalEl = document.getElementById('total');
+    container.innerHTML = '';
+    let total = 0;
+
+    cart.forEach((item, index) => {
+        total += (item.price * item.qty);
+        container.innerHTML += `
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; background:#f9f9f9; padding:10px; border-radius:8px;">
+                <img src="${item.img}" width="50" style="border-radius:5px">
+                <div style="flex:1">
+                    <small>${item.name}</small><br>
+                    <b>PKR ${item.price} x ${item.qty}</b>
+                </div>
+                <button onclick="removeItem(${index})" style="background:none; border:none; color:red; cursor:pointer">✕</button>
+            </div>
+        `;
+    });
+
+    totalEl.innerText = `Total: PKR ${total}`;
+}
+
+function removeItem(index) {
+    cart.splice(index, 1);
+    localStorage.setItem("cart", JSON.stringify(cart));
+    updateCartUI();
+}
+
 async function placeOrder() {
     const name = document.getElementById('name').value;
     const phone = document.getElementById('phone').value;
     const address = document.getElementById('address').value;
+    const method = document.getElementById('method').value;
 
     if (!name || !phone || cart.length === 0) {
         alert("Details fill karein!");
@@ -209,23 +351,54 @@ async function placeOrder() {
         customer_name: name, 
         phone: phone, 
         address: address, 
+        payment_method: method,
         items: JSON.stringify(cart),
         total: cart.reduce((a, i) => a + (i.price * i.qty), 0) 
     }]);
 
     if (!error) {
-        alert("Order Successful! Aapke Admin Panel mein save ho gaya hai.");
+        alert("Order Successful!");
         cart = [];
         localStorage.removeItem("cart");
         location.reload();
     } else {
-        alert("Order save nahi hua. Table 'orders' check karein.");
+        alert("Error: Table connection check karein.");
     }
 }
+
 function submitRepair(event) {
     event.preventDefault();
     alert("Repair Request Sent!");
 }
+
+// Chat Functions (Pehle wale hi hain)
+function toggleIndexChat() {
+    const chat = document.getElementById('indexChatWindow');
+    chat.style.display = (chat.style.display === 'flex') ? 'none' : 'flex';
+}
+
+function sendIndexMessage() {
+    const input = document.getElementById('indexUserInput');
+    const msgArea = document.getElementById('indexChatMsgs');
+    if (input.value.trim() === "") return;
+    const userMsg = document.createElement('div');
+    userMsg.className = 'msg msg-user';
+    userMsg.innerText = input.value;
+    msgArea.appendChild(userMsg);
+    msgArea.scrollTop = msgArea.scrollHeight;
+    setTimeout(() => {
+        const botReply = document.createElement('div');
+        botReply.className = 'msg msg-bot';
+        botReply.innerText = "Thanks for reaching out! Please leave your WhatsApp number.";
+        msgArea.appendChild(botReply);
+        msgArea.scrollTop = msgArea.scrollHeight;
+    }, 1000);
+    input.value = "";
+}
+
+document.getElementById('indexUserInput').addEventListener("keypress", function(e) {
+    if (e.key === "Enter") sendIndexMessage();
+});
 </script>
 </body>
 </html>
